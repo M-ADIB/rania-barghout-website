@@ -2,8 +2,9 @@
    DESIGN SYSTEM & CUSTOM STYLES - "THE NEXT CHAPTER" BY RANIA BARGHOUT
    ========================================================================== */
 
-/* --- Google Fonts Import --- */
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+/* --- Fonts ---
+   Loaded per-page via <link> in each document <head> (Cairo + Inter + Outfit)
+   to avoid the render-blocking @import waterfall. Do not re-add @import here. */
 
 /* --- Root Design Tokens --- */
 :root {
