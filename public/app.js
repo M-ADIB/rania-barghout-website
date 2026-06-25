@@ -690,15 +690,8 @@ const pausePodcast = () => {
 
 // --- Initialize App Controls ---
 document.addEventListener('DOMContentLoaded', () => {
-  // Lazy load hero background video
-  const heroVideo = document.getElementById('hero-video');
-  if (heroVideo) {
-    const source = document.createElement('source');
-    source.src = 'assets/hero_video.mp4';
-    source.type = 'video/mp4';
-    heroVideo.appendChild(source);
-    heroVideo.load();
-  }
+  // (BTL hero now uses the self-animating "Living Waveform" canvas — the 14MB
+  //  background video was removed; no video injection needed.)
 
   // Detect language from URL search parameters or fallback to 'en'
   const urlParams = new URLSearchParams(window.location.search);
