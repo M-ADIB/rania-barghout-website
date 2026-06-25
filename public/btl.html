@@ -16,9 +16,22 @@
 
   <link rel="canonical" href="https://thenextchapter.vip/btl.html">
 
-  <script>(function(){try{var t=localStorage.getItem('btl-theme')||'dark';document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
+  <script>document.documentElement.classList.add('js');(function(){try{var t=localStorage.getItem('btl-theme')||'dark';document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
 
-  <link rel="stylesheet" href="/style.css?v=8">
+  <!-- Fonts (scoped; replaces former @import in style.css) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/style.css?v=9">
+
+  <style>
+    /* The Living Waveform hero (btl-only, isolated from style.css) */
+    .hero { position: relative; }
+    .hero-waveform-wrap { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
+    #hero-waveform { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+    .hero .hero-grid { position: relative; z-index: 2; }
+  </style>
 </head>
 <body>
 
@@ -93,9 +106,9 @@
 
   <!-- Hero Section -->
   <section class="hero" id="hero-section">
-    <!-- Background Video with lazy src injection -->
-    <div class="hero-video-wrapper">
-      <video id="hero-video" autoplay muted loop playsinline preload="none" class="hero-video-bg"></video>
+    <!-- The Living Waveform — self-animating hero visualizer (replaces 14MB video) -->
+    <div class="hero-waveform-wrap" aria-hidden="true">
+      <canvas id="hero-waveform"></canvas>
       <div class="hero-video-overlay"></div>
     </div>
     
@@ -299,7 +312,10 @@
         <div class="about-glow-orb"></div>
         <div class="about-card-stack" id="about-stack-container">
           <div class="about-photo-card" id="about-rania-card">
-            <img src="/assets/rania_bio.png" alt="Rania Barghout" class="about-photo-img" id="about-rania-img">
+            <picture>
+              <source type="image/webp" srcset="/assets/rania_bio-480.webp 480w, /assets/rania_bio-960.webp 960w, /assets/rania_bio-1440.webp 1440w" sizes="(max-width: 768px) 90vw, 460px">
+              <img src="/assets/rania_bio.png" alt="Rania Barghout" class="about-photo-img" id="about-rania-img" width="1920" height="1070" loading="lazy" decoding="async">
+            </picture>
           </div>
         </div>
       </div>
@@ -541,7 +557,7 @@
 
   <!-- Scripts Connection -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/app.js?v=6"></script>
+  <script src="/app.js?v=7"></script>
 
   <script>
     (function(){
@@ -556,6 +572,49 @@
       document.querySelectorAll('[data-theme-set]').forEach(function(b){
         b.addEventListener('click', function(){ apply(b.getAttribute('data-theme-set')); });
       });
+    })();
+  </script>
+
+  <script>
+    /* The Living Waveform — vanilla, self-animating cobalt->teal hero visualizer.
+       Isolated: does not touch app.js or the audio player. */
+    (function(){
+      var canvas = document.getElementById('hero-waveform');
+      if (!canvas || !canvas.getContext) return;
+      var ctx = canvas.getContext('2d');
+      var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var W=0, H=0, dpr=1, raf=0, BARS=104, pointer={x:-999,on:0};
+      function theme(){ return document.documentElement.getAttribute('data-theme'); }
+      function resize(){ dpr=Math.min(window.devicePixelRatio||1,2); W=canvas.clientWidth; H=canvas.clientHeight; canvas.width=W*dpr; canvas.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); }
+      function bar(x,y,w,h,r){ if(ctx.roundRect){ ctx.beginPath(); ctx.roundRect(x,y,w,h,r); ctx.fill(); } else { ctx.fillRect(x,y,w,h); } }
+      function draw(t){
+        ctx.clearRect(0,0,W,H);
+        var a = theme()==='light' ? 0.42 : 0.85;
+        var g = ctx.createLinearGradient(0,0,W,0);
+        g.addColorStop(0,'rgba(76,96,255,0)');
+        g.addColorStop(0.12,'rgba(76,96,255,'+a+')');
+        g.addColorStop(0.5,'rgba(99,102,241,'+a+')');
+        g.addColorStop(0.88,'rgba(0,242,254,'+a+')');
+        g.addColorStop(1,'rgba(0,242,254,0)');
+        ctx.fillStyle = g;
+        var gap=W/BARS, bw=Math.max(2,gap*0.34), mid=H*0.58;
+        for (var i=0;i<BARS;i++){
+          var x=i*gap+gap/2, n=i/BARS;
+          var amp=(Math.sin(n*Math.PI*7 + t*0.0016)*0.5+0.5);
+          amp*=(Math.sin(n*Math.PI*2.3 - t*0.0009)*0.4+0.6);
+          var taper=0.35+0.65*Math.sin(n*Math.PI);
+          var h=10+amp*H*0.32*taper;
+          if (pointer.on){ var d=Math.abs(x-pointer.x); var infl=Math.max(0,1-d/170); h+=infl*infl*H*0.20; }
+          bar(x-bw/2, mid-h/2, bw, h, bw/2);
+        }
+        if (!reduce) raf=requestAnimationFrame(draw);
+      }
+      function start(){ resize(); if(reduce){ draw(0); } else { cancelAnimationFrame(raf); raf=requestAnimationFrame(draw); } }
+      window.addEventListener('resize', start);
+      canvas.addEventListener('pointermove', function(e){ var r=canvas.getBoundingClientRect(); pointer.x=e.clientX-r.left; pointer.on=1; });
+      canvas.addEventListener('pointerleave', function(){ pointer.on=0; });
+      document.querySelectorAll('[data-theme-set]').forEach(function(b){ b.addEventListener('click', function(){ if(reduce) draw(0); }); });
+      start();
     })();
   </script>
 </body>

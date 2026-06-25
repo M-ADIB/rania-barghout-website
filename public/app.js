@@ -690,15 +690,8 @@ const pausePodcast = () => {
 
 // --- Initialize App Controls ---
 document.addEventListener('DOMContentLoaded', () => {
-  // Lazy load hero background video
-  const heroVideo = document.getElementById('hero-video');
-  if (heroVideo) {
-    const source = document.createElement('source');
-    source.src = 'assets/hero_video.mp4';
-    source.type = 'video/mp4';
-    heroVideo.appendChild(source);
-    heroVideo.load();
-  }
+  // (BTL hero now uses the self-animating "Living Waveform" canvas — the 14MB
+  //  background video was removed; no video injection needed.)
 
   // Detect language from URL search parameters or fallback to 'en'
   const urlParams = new URLSearchParams(window.location.search);
@@ -720,7 +713,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Load dynamic content from Supabase
   loadLatestEpisode();
   loadTickerEpisodes();
-  
+
+  // Resilient entrance animations
+  initScrollReveal();
+
   // Scrolled Header Animation
   const header = document.querySelector('header');
   window.addEventListener('scroll', () => {
@@ -1647,7 +1643,34 @@ function showSuccessModal(data) {
   }
 }
 
-// --- Scroll reveal disabled to ensure maximum reliability and prevent blank screens on scroll ---
+// --- Resilient scroll reveal (Phase 0g) -------------------------------------
+// Content is visible by default; CSS only hides .reveal/.scroll-reveal when
+// html.js is set. This observer animates them in, with three safety nets so
+// nothing can ever stay hidden: reduced-motion/feature-test, the observer
+// itself, and a 2.5s watchdog.
+function initScrollReveal() {
+  const els = document.querySelectorAll('.reveal, .scroll-reveal');
+  if (!els.length) return;
+  const showAll = () => els.forEach(el => el.classList.add('in'));
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce || !('IntersectionObserver' in window)) { showAll(); return; }
+  // Stagger siblings that share a parent.
+  els.forEach(el => {
+    const g = el.parentElement;
+    if (g && !g.__rev) {
+      const kids = g.querySelectorAll(':scope > .reveal, :scope > .scroll-reveal');
+      if (kids.length > 1) kids.forEach((k, i) => k.style.setProperty('--i', Math.min(i, 6)));
+      g.__rev = true;
+    }
+  });
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+  els.forEach(el => io.observe(el));
+  setTimeout(showAll, 2500); // watchdog: never leave content hidden
+}
 
 // ==========================================================================
 // DYNAMIC DATABASE & AUDIO PLAYER COUPLING LOGIC (CMS PERSISTENCE)
