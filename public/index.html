@@ -313,7 +313,10 @@
     <!-- ABOUT -->
     <section class="block" id="about">
       <div class="container about-grid reveal">
-        <img class="about-portrait" src="/assets/rania_portrait_2.jpg" alt="Rania Barghout" loading="lazy">
+        <picture>
+          <source type="image/webp" srcset="/assets/rania_portrait_2-480.webp 480w, /assets/rania_portrait_2.webp 556w" sizes="(max-width: 768px) 80vw, 360px">
+          <img class="about-portrait" src="/assets/rania_portrait_2.jpg" alt="Rania Barghout" width="556" height="1024" loading="lazy" decoding="async">
+        </picture>
         <div class="about-text">
           <span class="section-eyebrow">About</span>
           <h2 class="section-title">A new chapter in Arab media</h2>

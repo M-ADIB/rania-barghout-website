@@ -304,7 +304,10 @@
         <div class="about-glow-orb"></div>
         <div class="about-card-stack" id="about-stack-container">
           <div class="about-photo-card" id="about-rania-card">
-            <img src="/assets/rania_bio.png" alt="Rania Barghout" class="about-photo-img" id="about-rania-img">
+            <picture>
+              <source type="image/webp" srcset="/assets/rania_bio-480.webp 480w, /assets/rania_bio-960.webp 960w, /assets/rania_bio-1440.webp 1440w" sizes="(max-width: 768px) 90vw, 460px">
+              <img src="/assets/rania_bio.png" alt="Rania Barghout" class="about-photo-img" id="about-rania-img" width="1920" height="1070" loading="lazy" decoding="async">
+            </picture>
           </div>
         </div>
       </div>
