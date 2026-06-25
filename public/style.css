@@ -26,9 +26,10 @@
   
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --text-muted: #7c8aa0;          /* raised from #64748b for AA contrast on dark */
   --text-error: #ff4d4d;
   --text-success: #10b981;
+  --focus-ring: #5b73ff;          /* keyboard focus outline — visible on dark + light */
   
   /* Fonts */
   --font-en-head: 'Outfit', sans-serif;
@@ -3234,4 +3235,56 @@ body.rtl #sponsor-phone-prefix {
 body.rtl #form-phone-number,
 body.rtl #form-sponsor-phone-number {
   border-radius: 12px 0 0 12px !important;
+}
+
+/* ==========================================================================
+   ACCESSIBILITY — focus visibility, reduced motion, skip link (Phase 0e)
+   ========================================================================== */
+
+/* Keyboard focus ring. Placed last so it wins by source order over the
+   element-level `outline:none` resets (.hamburger-btn, form inputs, selects,
+   toggle buttons). Pointer focus stays ring-free. */
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+:focus:not(:focus-visible) { outline: none; }
+
+/* Skip-to-content link (first focusable element on each page). */
+.skip-link {
+  position: fixed;
+  top: 0.5rem;
+  inset-inline-start: 0.5rem;
+  z-index: 4000;
+  padding: 0.65rem 1.1rem;
+  background: var(--accent-cobalt);
+  color: #fff;
+  font: 600 0.9rem/1 var(--font-en-body, system-ui, sans-serif);
+  border-radius: 8px;
+  text-decoration: none;
+  transform: translateY(-160%);
+  transition: transform 0.2s ease;
+}
+.skip-link:focus { transform: translateY(0); }
+
+/* Screen-reader-only utility. */
+.sr-only {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0);
+  white-space: nowrap; border: 0;
+}
+
+/* Honor the user's reduced-motion preference: neutralize the always-on glow
+   orbs, marquee, soundwave, and every transition/scroll animation. */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
