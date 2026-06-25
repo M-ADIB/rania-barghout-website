@@ -169,7 +169,13 @@
     aside.sidebar.collapsed {
       width: 72px;
     }
-    
+
+    /* Mobile off-canvas sidebar affordances (shown only <=768px) */
+    .db-scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.55); opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 150; }
+    .db-scrim.show { opacity: 1; pointer-events: auto; }
+    .db-mobile-burger { display: none; background: none; border: none; color: var(--text-primary); cursor: pointer; padding: 0.3rem; margin-inline-end: 0.5rem; align-items: center; }
+    .db-mobile-burger svg { width: 22px; height: 22px; }
+
     /* Logo Header */
     .logo-container {
       display: flex;
@@ -509,6 +515,18 @@
       .tab-panel {
         padding: 1.5rem;
       }
+      /* Sidebar becomes an off-canvas drawer */
+      .db-mobile-burger { display: inline-flex; }
+      aside.sidebar,
+      aside.sidebar.collapsed {
+        position: fixed; left: 0; top: 0; height: 100vh; width: 274px;
+        transform: translateX(-100%);
+        transition: transform 0.34s cubic-bezier(0.16,1,0.3,1);
+        z-index: 200; box-shadow: 0 0 60px rgba(0,0,0,0.55);
+      }
+      aside.sidebar.mobile-open { transform: translateX(0); }
+      /* hide the desktop collapse toggle on mobile (drawer is full-width) */
+      .toggle-sidebar-btn { display: none; }
     }
     
     @media (max-width: 480px) {
@@ -1998,7 +2016,10 @@
   </div>
 
   <div class="app-wrapper">
-    
+
+    <!-- Mobile sidebar scrim -->
+    <div class="db-scrim" id="db-scrim"></div>
+
     <!-- Sidebar Navigation -->
     <aside class="sidebar" id="app-sidebar">
       
@@ -2080,6 +2101,9 @@
         
         <!-- Breadcrumbs path -->
         <div class="breadcrumb">
+          <button class="db-mobile-burger" id="db-mobile-burger" aria-label="Toggle navigation" aria-controls="app-sidebar" aria-expanded="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
           <span>App Control</span>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
           <span class="breadcrumb-active" id="active-breadcrumb-tab">Dashboard</span>
@@ -2566,5 +2590,25 @@
   <!-- Supabase CDN and Admin Code Connections -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="dashboard.js?v=3"></script>
+
+  <script>
+    /* Mobile off-canvas sidebar (isolated; does not alter data flows) */
+    (function(){
+      var sb = document.getElementById('app-sidebar');
+      var burger = document.getElementById('db-mobile-burger');
+      var scrim = document.getElementById('db-scrim');
+      if (!sb || !burger) return;
+      function setOpen(open){
+        sb.classList.toggle('mobile-open', open);
+        if (scrim) scrim.classList.toggle('show', open);
+        burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+      }
+      burger.addEventListener('click', function(){ setOpen(!sb.classList.contains('mobile-open')); });
+      if (scrim) scrim.addEventListener('click', function(){ setOpen(false); });
+      sb.querySelectorAll('.nav-option-btn').forEach(function(b){
+        b.addEventListener('click', function(){ if (window.matchMedia('(max-width: 768px)').matches) setOpen(false); });
+      });
+    })();
+  </script>
 </body>
 </html>
