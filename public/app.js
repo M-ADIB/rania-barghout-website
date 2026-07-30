@@ -1021,7 +1021,13 @@ document.addEventListener('DOMContentLoaded', () => {
           submitSpinner.style.display = 'none';
           submitBtn.disabled = false;
           submitText.textContent = translations[currentLang].btn_submit;
-          
+
+          // Meta Pixel — guest application submitted (conversion). No PII sent.
+          if (window.tncTrack) {
+            window.tncTrack('Lead', { content_name: 'Guest Application', content_category: 'guest' });
+            window.tncTrack('SubmitApplication', { content_name: 'Guest Application', content_category: 'guest' });
+          }
+
           showSuccessModal({
             name: fullName,
             email: email,
@@ -1293,7 +1299,13 @@ document.addEventListener('DOMContentLoaded', () => {
           sponsorSubmitSpinner.style.display = 'none';
           sponsorSubmitBtn.disabled = false;
           sponsorSubmitText.textContent = translations[currentLang].btn_submit_sponsor || "Submit Sponsor Inquiry";
-          
+
+          // Meta Pixel — sponsor inquiry submitted (conversion). Tier is non-PII context.
+          if (window.tncTrack) {
+            window.tncTrack('Lead', { content_name: 'Sponsor Inquiry', content_category: 'sponsor', tier: tier || 'unspecified' });
+            window.tncTrack('SubmitApplication', { content_name: 'Sponsor Inquiry', content_category: 'sponsor' });
+          }
+
           showSuccessModal({
             name: contactName,
             email: email,
